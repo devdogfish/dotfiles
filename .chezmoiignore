@@ -1,0 +1,8 @@
+{{ if ne .chezmoi.os "darwin" }}
+.zshrc_darwin
+private_Library/
+{{ end }}
+{{ if ne .chezmoi.os "windows" }}
+.zshrc_windows
+AppData/
+{{ end }}

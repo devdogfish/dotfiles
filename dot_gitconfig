@@ -1,0 +1,5 @@
+[user]
+	name = Mac Pro
+	email = devdogfish@proton.me
+[init]
+	default = branch

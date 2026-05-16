@@ -1,0 +1,55 @@
+export ZSH="$HOME/.oh-my-zsh"
+export ICLOUD_DRIVE="/Users/devdogfish/Library/Mobile Documents/com~apple~CloudDocs"
+
+ZSH_THEME="robbyrussell"
+CASE_SENSITIVE="true"
+ENABLE_CORRECTION="true"
+
+plugins=(git)
+
+# Running scripts on startup
+source $ZSH/oh-my-zsh.sh
+source ~/bin/startup-ssh-devdogfish
+
+export EDITOR='nano'
+
+# personal scripts
+export PATH=$PATH:~/bin
+# postgres psql command
+export PATH=$PATH:/Applications/Postgres.app/Contents/Versions/16/bin
+
+# pnpm
+export PNPM_HOME="/Users/devdogfish/Library/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+
+# Globally installed BUbun scripts
+export PATH="/Users/devdogfish/.bun/bin:$PATH"
+
+export NODE_OPTIONS=--max_old_space_size=8192
+
+# bun completions
+[ -s "/Users/devdogfish/.bun/_bun" ] && source "/Users/devdogfish/.bun/_bun"
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+. "$HOME/.local/bin/env"
+
+# Added by Antigravity
+export PATH="/Users/devdogfish/.antigravity/antigravity/bin:$PATH"
+export PATH="$HOME/.diversion/bin:$PATH"
+# export PATH="$PATH:$HOME/.docker/bin"
+
+# Add Docker Desktop for Mac (docker)
+export PATH="$PATH:/Applications/Docker.app/Contents/Resources/bin/"
+export FLASHCARDBROWSER_API_KEY="flashcardbrowser_a4f8c2e6b1d3f7a9c5e2b4d6f8a1c3e5b7d9f2a4c6e8b1d3"
+
+# Added by Antigravity
+export PATH="/Users/devdogfish/.antigravity/antigravity/bin:$PATH"
+
+[ -f ~/.zshrc_darwin ]  && source ~/.zshrc_darwin
+[ -f ~/.zshrc_windows ] && source ~/.zshrc_windows

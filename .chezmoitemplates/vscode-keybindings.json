@@ -1,0 +1,17 @@
+// Place your key bindings in this file to override the defaults
+[
+  {
+    "key": "ctrl+alt+cmd+m",
+    "command": "explorer.newFolder"
+  },
+  {
+    "key": "shift+cmd+g",
+    "command": "workbench.view.scm",
+    "when": "workbench.scm.active"
+  },
+  {
+    "key": "ctrl+shift+g",
+    "command": "-workbench.view.scm",
+    "when": "workbench.scm.active"
+  }
+]

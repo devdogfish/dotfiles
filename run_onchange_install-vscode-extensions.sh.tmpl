@@ -1,0 +1,5 @@
+#!/bin/bash
+# hash: {{ include "dot_vscode-extensions.txt" | sha256sum }}
+while read -r ext; do
+  [ -n "$ext" ] && code --install-extension "$ext" --force
+done < "{{ .chezmoi.homeDir }}/.vscode-extensions.txt"
