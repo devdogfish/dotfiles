@@ -1,0 +1,86 @@
+#!/bin/sh
+help () {
+  echo "Usage serve-php [-p|--port <num>] <webroot>"
+  echo "	-p, --port: The port number to expose, defaults to 80"
+  echo "	<webroot>: The path to set as the webroot, defaults to CWD"
+  echo ""
+}
+
+while [[ "$#" -gt 0 ]]; do
+  case $1 in
+    -p|--port) _PORT="$2"; shift;;
+    -h|--help)
+      help
+      exit
+      ;;
+    *) _WEBROOT="${@}"; break;;
+  esac
+  shift
+done
+WEBROOT="${_WEBROOT:-$PWD}"
+PORT="${_PORT:-3000}"
+
+if lsof -Pi ":$PORT" -sTCP:LISTEN -t >/dev/null ; then
+  echo "The port $PORT is in use. Exiting...";
+  exit
+fi
+
+rm -rf "$WEBROOT/.servephp"
+mkdir -p "$WEBROOT/.servephp"
+
+cat << 'EOF' > "$WEBROOT/.servephp/apache.conf"
+ServerName localhost
+EOF
+
+cat << 'EOF' > "$WEBROOT/.servephp/php.ini"
+xdebug.mode=develop,debug,profile
+xdebug.start_with_request=trigger
+xdebug.discover_client_host=true
+xdebug.client_host=host.docker.internal
+xdebug.output_dir=/var/www/html/.log
+EOF
+
+cat << 'EOF' > "$WEBROOT/.servephp/Dockerfile"
+FROM php:8.3-apache
+RUN apt-get update \
+  && apt-get install -y \
+    libmemcached-dev \
+    libssl-dev \
+    zlib1g-dev \
+    libicu-dev \
+    libpng-dev
+RUN docker-php-ext-install mysqli intl pdo pdo_mysql gd
+RUN pecl install memcached \
+  && docker-php-ext-enable memcached
+RUN pecl install xdebug \
+  && docker-php-ext-enable xdebug
+RUN a2enmod rewrite
+COPY ./php.ini /usr/local/etc/php/conf.d/php-extra.ini
+COPY ./apache.conf /etc/apache2/conf-enabled/apache-extra.conf
+EOF
+
+docker build -t "serve-php:latest" "$WEBROOT/.servephp/"
+
+rm "$WEBROOT/.servephp/Dockerfile"
+rm "$WEBROOT/.servephp/php.ini"
+rm "$WEBROOT/.servephp/apache.conf"
+rmdir "$WEBROOT/.servephp"
+mkdir -p "$WEBROOT/.servephp-log"
+
+KEY=$(head /dev/urandom | base64 | tr -dc 'a-z' | fold -w 5 | head -n 1)
+NAME="PHPDev-$KEY"
+
+echo "Starting Apache on port ${PORT}; Ctrl-C to end."
+CONTAINER=$(docker run \
+  -d \
+  --name "$NAME" \
+  --network "bridge" \
+  --publish "${PORT}:80" \
+  --mount "type=bind,source=$WEBROOT,target=/var/www/html" \
+  --rm \
+  "serve-php:latest")
+
+trap ' ' INT
+docker logs -f "$CONTAINER" 2>&1 | tee "$WEBROOT/.servephp-log/apache.log"
+echo "Cleaning up..."
+docker stop "$CONTAINER" &> /dev/null

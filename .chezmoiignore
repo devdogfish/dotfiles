@@ -6,3 +6,5 @@ private_Library/
 .zshrc_windows
 AppData/
 {{ end }}
+bin/dot_git
+**/.git

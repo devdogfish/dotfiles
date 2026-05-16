@@ -1,0 +1,18 @@
+#!/bin/bash
+# Proton Pass SSH agent startup
+
+PROTON_SOCK="$HOME/.ssh/proton-pass-agent.sock"
+PROTON_PID="$HOME/.ssh/proton-pass-agent.pid"
+VAULT_NAME="SSH"
+
+# Check if the daemon is already running
+if [ -S "$PROTON_SOCK" ] && [ -f "$PROTON_PID" ] && kill -0 "$(cat "$PROTON_PID")" 2>/dev/null; then
+  # Daemon is running, just point to its socket
+  export SSH_AUTH_SOCK="$PROTON_SOCK"
+else
+  # Start the daemon
+  pass-cli ssh-agent daemon start --vault-name "$VAULT_NAME" 2>/dev/null
+  export SSH_AUTH_SOCK="$PROTON_SOCK"
+fi
+
+export SSH_AUTH_SOCK=/Users/devdogfish/.ssh/proton-pass-agent.sock

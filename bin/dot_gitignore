@@ -1,0 +1,30 @@
+# Environment files — never commit secrets
+.env
+.env.*
+*.env
+
+# Keys and credentials
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+
+# OS clutter
+.DS_Store
+Thumbs.db
+
+# Editor clutter
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Docker volumes and data
+beszel_data/
+beszel_socket/

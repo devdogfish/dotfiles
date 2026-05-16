@@ -1,0 +1,13 @@
+#!/bin/sh
+
+docker run \
+  --name "MariaDB" \
+  --volume "mariadb-data:/var/lib/mysql" \
+  --restart "unless-stopped" \
+  --network "bridge" \
+  --publish "3306:3306" \
+  --env "MARIADB_USER=localdev" \
+  --env "MARIADB_PASSWORD=36JpkkBC35L5fj6z3L6N7wvzI1" \
+  --env "MARIADB_ROOT_PASSWORD=3Lv5YH8ilOGaaNOBUw64V6DCn4" \
+  --detach \
+  "mariadb:latest"
