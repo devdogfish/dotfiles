@@ -88,7 +88,7 @@ chezmoi init --apply git@github.com:devdogfish/dotfiles.git
 
 ## First-time setup on Windows (MSYS2)
 
-See `windows-chezmoi-setup.md` in this repo for the full step-by-step,
+See `windows-mysys2-chezmoi-setup.md` in this repo for the full step-by-step,
 including the MSYS2 `HOME` fix and the offline backup (zip) method.
 
 Short version:
@@ -107,7 +107,7 @@ To grab a single file from the repo without cloning everything (handy if a
 proxy blocks Git, or you just want one file quickly), use curl on the raw URL:
 
 ```bash
-curl -O https://raw.githubusercontent.com/devdogfish/dotfiles/main/windows-chezmoi-setup.md
+curl -O https://raw.githubusercontent.com/devdogfish/dotfiles/main/windows-mysys2-chezmoi-setup.md
 ```
 
 `-O` saves it with its original name in the current folder. Change the path at
