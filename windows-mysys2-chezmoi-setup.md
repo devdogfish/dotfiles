@@ -1,113 +1,62 @@
-# Windows (MSYS2) chezmoi Setup
+# Windows VS Code — verify / fix chezmoi-managed files
 
-Replace `YOU` with your GitHub username everywhere.
+Run these on the **Windows MSYS2 shell**, in order. Stop if anything looks off.
 
-## Step 1 — Fix HOME (MSYS2-specific, do this FIRST)
-
-In the MSYS2 shell:
+## 1. See what chezmoi thinks it manages
 
 ```bash
-echo $HOME
+chezmoi managed | grep -i code
 ```
 
-- If it shows `/c/Users/YOU` → skip to Step 2.
-- If it shows `/home/YOU` → run this, then close and reopen MSYS2:
+**Expected**: two lines ending in `keybindings.json` and `settings.json` under `AppData/Roaming/Code/User/`.
+**If empty**: the Windows stubs don't exist in the repo → skip to step 5.
+
+## 2. See what's actually on disk
 
 ```bash
-echo 'db_home: windows' >> /etc/nsswitch.conf
+ls -la "$HOME/AppData/Roaming/Code/User/"
 ```
 
-Reopen MSYS2 and confirm:
+**Expected**: `keybindings.json` and `settings.json` present.
 
-```bash
-echo $HOME      # must now be /c/Users/YOU
-```
-
-This makes `~` point at your Windows profile so VS Code settings land in the real `%APPDATA%`.
-
-## Step 2 — Install chezmoi
-
-```bash
-pacman -S mingw-w64-x86_64-chezmoi
-```
-
-If not found:
-
-```bash
-sh -c "$(curl -fsLS get.chezmoi.io)"
-```
-
-Verify:
-
-```bash
-chezmoi --version
-```
-
-## Step 3 — Pull and apply (primary path)
-
-```bash
-chezmoi init --apply git@github.com:YOU/dotfiles.git
-```
-
-No SSH key? Use HTTPS:
-
-```bash
-chezmoi init --apply https://github.com/YOU/dotfiles.git
-```
-
-This clones the full repo. `.chezmoiignore` auto-drops Mac files; only Windows
-targets apply. VS Code settings/keybindings → `%APPDATA%\Code\User\`,
-extensions install, shell config applies.
-
-## Step 3b — Backup path (proxy blocks GitHub)
-
-If Step 3 fails to pull:
-
-1. In a browser, download:
-   `https://github.com/YOU/dotfiles/archive/refs/heads/main.zip`
-2. Unzip to Downloads.
-3. Point chezmoi at the unzipped folder:
-
-```bash
-chezmoi init --source="/c/Users/YOU/Downloads/dotfiles-main"
-chezmoi apply --source="/c/Users/YOU/Downloads/dotfiles-main" -v
-```
-
-Reconnect Git later when unblocked:
-
-```bash
-chezmoi cd
-git remote add origin https://github.com/YOU/dotfiles.git
-git fetch origin
-git reset --hard origin/main
-```
-
-## Step 4 — Verify
+## 3. Confirm they match the repo
 
 ```bash
 chezmoi diff
-chezmoi apply -v
-ls -la "/c/Users/YOU/AppData/Roaming/Code/User/"
 ```
 
-Confirm `settings.json` and `keybindings.json` are present there. Reload VS Code
-window to pick them up.
+**Expected**: empty (no diff). Anything printed = drift between repo and live files.
 
-## Step 5 — Windows-specific shell tweaks
+## 4. Force re-apply if drift exists
 
 ```bash
-chezmoi edit ~/.zshrc_windows      # plain shell, no templating
-chezmoi apply
+chezmoi apply -v
+```
+
+Verbose; prints every file it writes. Then re-run step 3 — should now be empty.
+
+## 5. If step 1 was empty — add the missing Windows stubs
+
+This is the "repo is incomplete" case. From either machine:
+
+```bash
 chezmoi cd
-git add .
-git commit -m "windows zshrc customizations"
+mkdir -p "AppData/Roaming/Code/User"
+printf '{{ template "vscode-keybindings.json" . }}\n' > "AppData/Roaming/Code/User/keybindings.json.tmpl"
+printf '{{ template "vscode-settings.json" . }}\n'    > "AppData/Roaming/Code/User/settings.json.tmpl"
+git add AppData
+git commit -m "add Windows VS Code stubs"
 git push
 ```
 
-## Ongoing sync
+Then on Windows:
 
 ```bash
-chezmoi update      # git pull + apply (primary path only)
+chezmoi update    # pull + apply
 ```
 
-Backup path: re-download zip, re-run `chezmoi apply --source=...`.
+Re-run steps 1–3 to verify.
+
+## 6. Reload VS Code
+
+Cmd/Ctrl+Shift+P → "Developer: Reload Window" so VS Code re-reads the files.
